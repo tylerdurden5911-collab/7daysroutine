@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GOAT — 7 Day Execution</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&family=Unbounded:wght@300;400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #FFD700;
+    --orange: #FF6B00;
+    --red: #FF1B1B;
+    --purple: #7B68EE;
+    --green: #00FF87;
+    --dark: #080808;
+    --dark2: #111111;
+    --dark3: #1a1a1a;
+    --white: #F5F5F0;
+    --dim: #666;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--dark);
+    color: var(--white);
+    font-family: 'Space Mono', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* HERO */
+  .hero {
+    position: relative;
+    text-align: center;
+    padding: 50px 20px 30px;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(255,107,0,0.13) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-tag { font-size: 10px; letter-spacing: 6px; color: var(--orange); text-transform: uppercase; margin-bottom: 10px; font-family: 'Space Mono', monospace; }
+  .hero-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(60px, 13vw, 130px); line-height: 0.9; background: linear-gradient(135deg, #FFD700 0%, #FF6B00 50%, #FF1B1B 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .hero-sub { font-family: 'Unbounded', sans-serif; font-size: clamp(9px, 1.8vw, 12px); font-weight: 300; letter-spacing: 4px; color: var(--dim); text-transform: uppercase; margin-top: 10px; }
+
+  /* DAY TABS */
+  .day-tabs {
+    display: flex;
+    overflow-x: auto;
+    gap: 6px;
+    padding: 20px 16px 0;
+    scrollbar-width: none;
+  }
+  .day-tabs::-webkit-scrollbar { display: none; }
+
+  .day-tab {
+    flex-shrink: 0;
+    padding: 10px 16px;
+    background: var(--dark2);
+    border: 1px solid rgba(255,255,255,0.07);
+    cursor: pointer;
+    transition: all 0.25s;
+    text-align: center;
+    min-width: 80px;
+  }
+  .day-tab:hover { border-color: rgba(255,107,0,0.4); }
+  .day-tab.active { border-color: var(--orange); background: rgba(255,107,0,0.08); }
+  .day-tab.complete { border-color: var(--gold); background: rgba(255,215,0,0.06); }
+
+  .day-tab .day-name { font-family: 'Bebas Neue', sans-serif; font-size: 20px; color: var(--white); line-height: 1; }
+  .day-tab .day-date { font-size: 8px; letter-spacing: 2px; color: var(--dim); text-transform: uppercase; margin-top: 2px; }
+  .day-tab .day-progress { font-size: 9px; color: var(--gold); margin-top: 4px; }
+  .day-tab.complete .day-name { color: var(--gold); }
+
+  /* OVERALL PROGRESS */
+  .overall-bar {
+    margin: 16px;
+    background: var(--dark2);
+    border: 1px solid rgba(255,255,255,0.06);
+    padding: 16px 20px;
+  }
+  .overall-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .overall-label { font-family: 'Unbounded', sans-serif; font-size: 10px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--orange); }
+  .overall-pct { font-family: 'Bebas Neue', sans-serif; font-size: 28px; color: var(--gold); }
+  .progress-track { height: 4px; background: rgba(255,255,255,0.06); border-radius: 2px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--gold), var(--orange)); border-radius: 2px; transition: width 0.5s ease; }
+
+  /* SECTION */
+  .section-label {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    padding: 28px 16px 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-label.orange { color: var(--orange); }
+  .section-label.gold { color: var(--gold); }
+  .section-label.red { color: var(--red); }
+  .section-label.green { color: var(--green); }
+  .section-label.purple { color: var(--purple); }
+  .section-label.blue { color: #4FC3F7; }
+  .section-label::after { content: ''; flex: 1; height: 1px; }
+  .section-label.orange::after { background: linear-gradient(90deg, rgba(255,107,0,0.35), transparent); }
+  .section-label.gold::after { background: linear-gradient(90deg, rgba(255,215,0,0.35), transparent); }
+  .section-label.red::after { background: linear-gradient(90deg, rgba(255,27,27,0.35), transparent); }
+  .section-label.green::after { background: linear-gradient(90deg, rgba(0,255,135,0.35), transparent); }
+  .section-label.purple::after { background: linear-gradient(90deg, rgba(123,104,238,0.35), transparent); }
+  .section-label.blue::after { background: linear-gradient(90deg, rgba(79,195,247,0.35), transparent); }
+
+  /* CHECKLIST GROUP */
+  .checklist-group {
+    margin: 0 16px 4px;
+    border: 1px solid rgba(255,255,255,0.05);
+    overflow: hidden;
+  }
+
+  .check-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 13px 16px;
+    background: var(--dark2);
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.2s;
+    position: relative;
+  }
+  .check-item:last-child { border-bottom: none; }
+  .check-item:hover { background: var(--dark3); }
+  .check-item.done { opacity: 0.5; }
+  .check-item.done .ci-title { text-decoration: line-through; color: #555; }
+
+  .cb-box {
+    width: 18px; height: 18px;
+    border: 1.5px solid rgba(255,107,0,0.5);
+    border-radius: 2px;
+    flex-shrink: 0;
+    margin-top: 1px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+  .check-item.done .cb-box { background: var(--gold); border-color: var(--gold); }
+  .check-item.done .cb-box::after { content: '✓'; font-size: 11px; color: #000; font-weight: 900; }
+
+  .ci-content { flex: 1; }
+  .ci-title { font-size: 11px; letter-spacing: 0.5px; color: #ddd; line-height: 1.4; font-family: 'Space Mono', monospace; }
+  .ci-sub { font-size: 9px; color: #555; margin-top: 3px; letter-spacing: 0.5px; line-height: 1.4; }
+  .ci-tag {
+    font-size: 8px; letter-spacing: 2px; text-transform: uppercase;
+    padding: 2px 7px;
+    border-radius: 2px;
+    margin-left: auto;
+    flex-shrink: 0;
+    align-self: flex-start;
+    margin-top: 1px;
+  }
+  .tag-orange { background: rgba(255,107,0,0.12); color: var(--orange); border: 1px solid rgba(255,107,0,0.2); }
+  .tag-gold { background: rgba(255,215,0,0.1); color: var(--gold); border: 1px solid rgba(255,215,0,0.2); }
+  .tag-red { background: rgba(255,27,27,0.1); color: var(--red); border: 1px solid rgba(255,27,27,0.2); }
+  .tag-green { background: rgba(0,255,135,0.08); color: var(--green); border: 1px solid rgba(0,255,135,0.15); }
+  .tag-purple { background: rgba(123,104,238,0.1); color: var(--purple); border: 1px solid rgba(123,104,238,0.2); }
+  .tag-blue { background: rgba(79,195,247,0.08); color: #4FC3F7; border: 1px solid rgba(79,195,247,0.15); }
+
+  /* SECTION PROGRESS */
+  .sec-progress {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px 4px;
+    font-size: 9px;
+    color: var(--dim);
+    letter-spacing: 2px;
+  }
+  .sec-track { flex: 1; height: 2px; background: rgba(255,255,255,0.05); border-radius: 1px; overflow: hidden; }
+  .sec-fill { height: 100%; background: linear-gradient(90deg, var(--gold), var(--orange)); transition: width 0.4s; border-radius: 1px; }
+
+  /* DAILY SUMMARY */
+  .day-summary {
+    margin: 24px 16px 16px;
+    padding: 20px;
+    background: var(--dark2);
+    border: 1px solid rgba(255,215,0,0.15);
+    text-align: center;
+    display: none;
+  }
+  .day-summary.visible { display: block; }
+  .summary-icon { font-size: 40px; margin-bottom: 8px; }
+  .summary-title { font-family: 'Bebas Neue', sans-serif; font-size: 32px; color: var(--gold); }
+  .summary-sub { font-size: 10px; letter-spacing: 3px; color: var(--dim); text-transform: uppercase; margin-top: 4px; }
+
+  /* QUOTE FOOTER */
+  .quote-footer {
+    margin: 20px 16px 40px;
+    padding: 24px;
+    border: 1px solid rgba(255,107,0,0.15);
+    background: linear-gradient(135deg, rgba(255,215,0,0.03), rgba(255,107,0,0.03));
+    text-align: center;
+    position: relative;
+  }
+  .quote-footer::before { content: '"'; font-family: 'Bebas Neue', sans-serif; font-size: 80px; color: rgba(255,107,0,0.06); position: absolute; top: -10px; left: 10px; line-height: 1; }
+  .q-text { font-family: 'Unbounded', sans-serif; font-size: clamp(11px, 2.5vw, 16px); font-weight: 700; line-height: 1.6; color: var(--white); }
+  .q-text span { background: linear-gradient(90deg, var(--gold), var(--orange)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .q-author { font-size: 9px; letter-spacing: 3px; color: var(--dim); text-transform: uppercase; margin-top: 12px; }
+
+  .divider { height: 1px; background: linear-gradient(90deg, transparent, rgba(255,107,0,0.2), transparent); margin: 4px 16px; }
+
+  /* day panel */
+  .day-panel { display: none; }
+  .day-panel.active { display: block; }
+
+  @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+  .day-panel.active { animation: fadeIn 0.3s ease; }
+
+  /* streak */
+  .streak-bar {
+    display: flex;
+    gap: 6px;
+    padding: 10px 16px 0;
+    justify-content: center;
+  }
+  .streak-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.1);
+    transition: all 0.3s;
+  }
+  .streak-dot.lit { background: var(--gold); border-color: var(--gold); box-shadow: 0 0 8px rgba(255,215,0,0.5); }
+
+  /* SENECA FINAL QUOTE */
+  .quote-final {
+    margin: 0 16px 50px;
+    padding: 40px 28px;
+    background: var(--dark);
+    border-top: 1px solid rgba(255,215,0,0.08);
+    border-bottom: 3px solid var(--gold);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .quote-final::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 100%, rgba(255,215,0,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .qf-text {
+    font-size: clamp(15px, 3.5vw, 24px);
+    line-height: 1.7;
+    color: var(--white);
+    letter-spacing: 0.5px;
+    position: relative;
+  }
+  .qf-line {
+    width: 60px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    margin: 20px auto 16px;
+  }
+  .qf-author {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: var(--gold);
+    position: relative;
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-tag">7 Day Execution — No Days Off</div>
+  <div class="hero-title">GOAT MODE</div>
+  <div class="hero-sub">The Routine That Builds the 0.0001%</div>
+</div>
+
+<div class="streak-bar" id="streakBar"></div>
+
+<div class="overall-bar">
+  <div class="overall-top">
+    <span class="overall-label">7-Day Overall Progress</span>
+    <span class="overall-pct" id="overallPct">0%</span>
+  </div>
+  <div class="progress-track"><div class="progress-fill" id="overallFill" style="width:0%"></div></div>
+</div>
+
+<div class="day-tabs" id="dayTabs"></div>
+
+<div id="dayPanels"></div>
+
+<div class="quote-footer">
+  <div class="q-text">While they sleep, <span>you grind.</span><br>While they party, <span>you build.</span><br>While they wonder how you did it —<br>you'll already be on to <span>the next level.</span></div>
+  <div class="q-author">— The price of greatness is paid in the dark. Pay it every single day.</div>
+</div>
+
+<div class="quote-final">
+  <div class="qf-text">H𝔲𝔪𝔞𝔫 𝔤𝔯𝔢𝔞𝔱𝔫𝔢𝔰𝔰 𝔦𝔰 𝔫𝔬𝔱 𝔡𝔦𝔰𝔠𝔬𝔳𝔢𝔯𝔢𝔡 𝔲𝔫𝔱𝔦𝔩 𝔦𝔱 𝔦𝔰 𝔱𝔢𝔰𝔱𝔢𝔡; 𝔴𝔢 𝔪𝔲𝔰𝔱 𝔟𝔢 𝔥𝔞𝔯𝔡𝔢𝔫𝔢𝔡 𝔞𝔤𝔞𝔦𝔫𝔰𝔱 𝔣𝔬𝔯𝔱𝔲𝔫𝔢 𝔟𝔶 𝔣𝔬𝔯𝔱𝔲𝔫𝔢 𝔦𝔱𝔰𝔢𝔩𝔣</div>
+  <div class="qf-line"></div>
+  <div class="qf-author">— Seneca</div>
+</div>
+</div>
+</div>
+</div>
+
+<script>
+// ─── DATA ───────────────────────────────────────────────────────────────────
+const SECTIONS = [
+  {
+    id: 'morning', label: '☀️ Morning Routine', color: 'orange',
+    items: [
+      { id: 'water', title: '💧 Drink water immediately on waking', sub: 'Large glass — 500ml minimum. Before anything else.', tag: 'orange', tagLabel: '2 min' },
+      { id: 'affirmations', title: '🗣️ Shout your affirmations', sub: '"I am the best content creator India has ever seen. I am disciplined. I am unstoppable." Say them LOUD.', tag: 'orange', tagLabel: '5 min' },
+      { id: 'icedip', title: '🧊 Face ice dip', sub: 'Cold water bowl — dip face 3 times. Wakes the nervous system instantly. Reduces puffiness. Signals war mode.', tag: 'orange', tagLabel: '3 min' },
+      { id: 'gratitude', title: '📓 Gratitude journal', sub: 'Write 3 things you\'re grateful for. Feel them — don\'t just list them. Sets the emotional tone for the day.', tag: 'gold', tagLabel: '5 min' },
+      { id: 'sacredscript', title: '📜 Read & feel your sacred script', sub: 'Your written vision of who you\'re becoming. Read it slowly. Feel it as if it\'s already real.', tag: 'gold', tagLabel: '5 min' },
+      { id: 'visualize1', title: '🎯 Visualize your future self', sub: 'Eyes closed. See yourself winning — the videos blowing up, the physique, the discipline, the life. Make it vivid.', tag: 'gold', tagLabel: '5 min' },
+      { id: 'coldshower', title: '🚿 Cold shower — full cold', sub: 'No warm easing in. Straight cold. This is discipline in physical form. 90 seconds minimum.', tag: 'red', tagLabel: '5 min' },
+      { id: 'banana1', title: '🍌 Eat a banana — pre-workout fuel', sub: 'Quick carbs for energy. Grab it and go. Don\'t sit down.', tag: 'green', tagLabel: '2 min' },
+    ]
+  },
+  {
+    id: 'exercise', label: '💪 Exercise', color: 'red',
+    items: [
+      { id: 'run', title: '🏃 Run — straight outside', sub: '20-30 min steady run. This is your first war of the day. Every step makes you harder.', tag: 'red', tagLabel: '25 min' },
+      { id: 'skipping', title: '⚡ Skipping / jump rope', sub: 'High intensity. 3 rounds of 3 mins with 1 min rest. Cardio + coordination + calves.', tag: 'red', tagLabel: '10 min' },
+      { id: 'pushups', title: '🔥 Push-ups — max sets', sub: '3–4 sets to failure. Rest 60 seconds between sets. Chest, shoulders, triceps — no gym needed.', tag: 'red', tagLabel: '8 min' },
+      { id: 'squats', title: '🦵 Squats — bodyweight', sub: '3 sets x 20 reps. Slow and controlled. Feel the burn. Legs are the engine of the body.', tag: 'red', tagLabel: '7 min' },
+      { id: 'stretching', title: '🧘 Stretching — cool down', sub: 'Full body stretch. Hamstrings, quads, hip flexors, shoulders, back. 10 minutes. Injury prevention = consistency.', tag: 'green', tagLabel: '10 min' },
+    ]
+  },
+  {
+    id: 'diet', label: '🍳 Diet & Fuel', color: 'green',
+    items: [
+      { id: 'meal1', title: '🥚 First meal — 4-5 eggs + banana', sub: 'Scrambled, boiled, or omelette. High protein recovery meal. Banana for carbs. Eat within 30 min of finishing workout.', tag: 'green', tagLabel: 'Post-workout' },
+      { id: 'lunch', title: '🍱 Lunch — proper balanced meal', sub: 'Rice/roti + dal/sabzi + protein. Eat between 12:30–1:30pm. No skipping, no junk.', tag: 'green', tagLabel: 'Afternoon' },
+      { id: 'shake', title: '💪 Strong calorie-rich shake', sub: 'Banana + milk + peanut butter + oats + protein powder if available. 600–800 calories. Fuel for evening grind.', tag: 'green', tagLabel: 'Evening 5pm' },
+      { id: 'earlydinner', title: '🌙 Early dinner — by 7:30pm', sub: 'Light and nutritious. Dal, eggs, sabzi. Finish eating 2+ hours before bed for deep sleep quality.', tag: 'purple', tagLabel: 'Before 7:30' },
+      { id: 'water2l', title: '💧 2 litres water — full day', sub: 'Track it. Morning 500ml + work 500ml + evening 500ml + night 500ml. Hydration = performance.', tag: 'blue', tagLabel: 'All day' },
+    ]
+  },
+  {
+    id: 'work', label: '💼 Office & Work', color: 'blue',
+    items: [
+      { id: 'bath', title: '🛁 Bath after workout meal', sub: 'Clean, fresh, ready to dominate. How you present yourself sets your state of mind.', tag: 'blue', tagLabel: '15 min' },
+      { id: 'meditation', title: '🧘 10 min meditation before work', sub: 'Sit still. Focus on breath. Clear the workout intensity. Transition into focused, calm work mode.', tag: 'purple', tagLabel: '10 min' },
+      { id: 'top3', title: '📋 Write top 3 tasks for the day', sub: 'The 3 tasks that if completed make today a WIN. Do the hardest one first.', tag: 'blue', tagLabel: '5 min' },
+      { id: 'deepwork', title: '💻 Deep work block — office tasks', sub: 'No distractions. Phone down. Tabs closed. Full focus on work. Show up as the best performer in the room.', tag: 'blue', tagLabel: 'All day' },
+      { id: 'noSocial', title: '📵 No social media scrolling at work', sub: 'Reels and shorts are time thieves. Protect your focus. You\'re building empires, not consuming them.', tag: 'red', tagLabel: 'Rule' },
+    ]
+  },
+  {
+    id: 'ai', label: '🤖 AI Learning', color: 'gold',
+    items: [
+      { id: 'ai1hr', title: '🤖 1 hour AI learning — structured', sub: 'Course, tutorial, or build a project. Document what you learned. AI mastery in 1 year = career transformation.', tag: 'gold', tagLabel: '60 min' },
+      { id: 'aiapply', title: '⚡ Apply one thing you learned today', sub: 'Build something. Test something. Use something. Learning without doing is just entertainment.', tag: 'gold', tagLabel: 'Action' },
+    ]
+  },
+  {
+    id: 'content', label: '🎬 Content Creation', color: 'red',
+    items: [
+      { id: 'ideation', title: '💡 Content idea — script or concept', sub: 'What are you posting today? Hook, body, CTA. Write it down before touching camera. 10 minutes of thinking saves 30 minutes of reshooting.', tag: 'red', tagLabel: '10 min' },
+      { id: 'shootedit', title: '🎬 Shoot + Edit + Post — 1 hour block', sub: 'One video out the door. Done > perfect. Study the hook in the first 3 seconds. Watch your own video before posting.', tag: 'red', tagLabel: '50 min' },
+      { id: 'studycreator', title: '📊 Study one top creator today', sub: 'Their hook, editing style, pacing, caption, thumbnail. Steal the strategy, not the content. Apply one insight tomorrow.', tag: 'orange', tagLabel: 'Daily' },
+    ]
+  },
+  {
+    id: 'reading', label: '📚 Reading', color: 'gold',
+    items: [
+      { id: 'newspaper', title: '🗞️ Newspaper — know the world', sub: 'Physical or digital newspaper. 15–20 mins. Stay sharp on current events, business, and India\'s pulse. The best creators are also the most informed people in the room.', tag: 'gold', tagLabel: '15 min' },
+      { id: 'read1chapter', title: '📖 Read — 1 chapter or set pages', sub: 'Physical book only. No Kindle distractions. Evening is the best time — slower pace, better retention.', tag: 'gold', tagLabel: 'Evening' },
+      { id: 'readnotes', title: '✍️ Write one key insight from reading', sub: 'One sentence. What did today\'s chapter teach you? This is how knowledge becomes wisdom.', tag: 'gold', tagLabel: '3 min' },
+    ]
+  },
+  {
+    id: 'night', label: '🌙 Night Routine', color: 'purple',
+    items: [
+      { id: 'journal', title: '📓 Journal — wins of the day', sub: 'What did you crush today? Even small wins. "I woke up at 5am." "I didn\'t skip." Write it. Own it.', tag: 'purple', tagLabel: '10 min' },
+      { id: 'plan', title: '📋 Plan tomorrow\'s tasks', sub: 'Write your top 3. Lay gym clothes out. Set alarm. Remove all friction. Tomorrow\'s you only needs to execute.', tag: 'purple', tagLabel: '5 min' },
+      { id: 'facecare', title: '✨ Face care routine', sub: 'Cleanse, moisturize, eye cream if you have. You\'re building a personal brand — your face is part of it. Consistency = results.', tag: 'purple', tagLabel: '5 min' },
+      { id: 'nightstretch', title: '🧘 Stretching — release the day', sub: 'Hip flexors, hamstrings, spine twist, shoulder rolls. 10 minutes. Let the body recover while you sleep.', tag: 'purple', tagLabel: '10 min' },
+      { id: 'meditation1hr', title: '🧘 1 Hour Meditation', sub: 'Deep meditation session. Body scan, breathwork, or silent sitting. This is the most underrated performance tool on earth.', tag: 'purple', tagLabel: '60 min' },
+      { id: 'screensoff', title: '📵 Screens off — 30 min before sleep', sub: 'Phone in another room or face down. Your brain needs to stop receiving information. Let it consolidate today\'s learning.', tag: 'red', tagLabel: 'Rule' },
+      { id: 'sleepvisualize', title: '💤 Fall asleep while visualizing', sub: 'Eyes closed. See your future self. The body you\'re building, the content blowing up, the life you\'re creating. Drift into sleep in that vision.', tag: 'gold', tagLabel: 'Sleep' },
+    ]
+  }
+];
+
+// ─── STATE ────────────────────────────────────────────────────────────────
+const KEY = 'goat7day_v2';
+let state = {};
+
+function loadState() {
+  try { const s = localStorage.getItem(KEY); if (s) state = JSON.parse(s); } catch(e) {}
+}
+function saveState() {
+  try { localStorage.setItem(KEY, JSON.stringify(state)); } catch(e) {}
+}
+function getCheck(day, secId, itemId) {
+  return !!(state[day] && state[day][secId] && state[day][secId][itemId]);
+}
+function setCheck(day, secId, itemId, val) {
+  if (!state[day]) state[day] = {};
+  if (!state[day][secId]) state[day][secId] = {};
+  state[day][secId][itemId] = val;
+  saveState();
+}
+
+// ─── DATES ────────────────────────────────────────────────────────────────
+function getDates() {
+  const days = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const today = new Date(); today.setHours(0,0,0,0);
+  const start = new Date(today); start.setDate(start.getDate() + 1);
+  const arr = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(start); d.setDate(d.getDate() + i);
+    arr.push({ label: `Day ${i+1}`, day: days[d.getDay()], date: `${d.getDate()} ${months[d.getMonth()]}`, key: `day${i+1}` });
+  }
+  return arr;
+}
+
+// ─── COUNT HELPERS ────────────────────────────────────────────────────────
+function totalItems() { return SECTIONS.reduce((a,s) => a + s.items.length, 0); }
+function dayDone(dayKey) {
+  let done = 0;
+  SECTIONS.forEach(s => s.items.forEach(it => { if (getCheck(dayKey, s.id, it.id)) done++; }));
+  return done;
+}
+function sectionDone(dayKey, secId) {
+  const sec = SECTIONS.find(s => s.id === secId);
+  return sec.items.filter(it => getCheck(dayKey, secId, it.id)).length;
+}
+
+// ─── RENDER ───────────────────────────────────────────────────────────────
+let activeDay = 'day1';
+const dates = getDates();
+
+function buildTabs() {
+  const container = document.getElementById('dayTabs');
+  container.innerHTML = '';
+  dates.forEach(d => {
+    const done = dayDone(d.key);
+    const total = totalItems();
+    const pct = Math.round(done / total * 100);
+    const tab = document.createElement('div');
+    tab.className = `day-tab${d.key === activeDay ? ' active' : ''}${done === total ? ' complete' : ''}`;
+    tab.innerHTML = `<div class="day-name">${d.day}</div><div class="day-date">${d.date}</div><div class="day-progress">${done}/${total}</div>`;
+    tab.onclick = () => { activeDay = d.key; render(); };
+    container.appendChild(tab);
+  });
+}
+
+function buildStreak() {
+  const bar = document.getElementById('streakBar');
+  bar.innerHTML = '';
+  dates.forEach(d => {
+    const done = dayDone(d.key);
+    const dot = document.createElement('div');
+    dot.className = `streak-dot${done === totalItems() ? ' lit' : ''}`;
+    bar.appendChild(dot);
+  });
+}
+
+function buildOverall() {
+  let totalDone = 0, totalAll = dates.length * totalItems();
+  dates.forEach(d => { totalDone += dayDone(d.key); });
+  const pct = Math.round(totalDone / totalAll * 100);
+  document.getElementById('overallPct').textContent = pct + '%';
+  document.getElementById('overallFill').style.width = pct + '%';
+}
+
+function buildPanels() {
+  const container = document.getElementById('dayPanels');
+  container.innerHTML = '';
+
+  dates.forEach(d => {
+    const panel = document.createElement('div');
+    panel.className = `day-panel${d.key === activeDay ? ' active' : ''}`;
+    panel.id = `panel-${d.key}`;
+
+    const done = dayDone(d.key);
+    const total = totalItems();
+
+    // day header
+    const hdr = document.createElement('div');
+    hdr.style.cssText = 'padding:16px 16px 0; display:flex; align-items:center; justify-content:space-between;';
+    hdr.innerHTML = `
+      <div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:36px;color:var(--gold);line-height:1">${d.day} — ${d.label}</div>
+        <div style="font-size:9px;letter-spacing:3px;color:var(--dim);text-transform:uppercase;margin-top:2px">${d.date}</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:36px;color:${done===total?'var(--gold)':'var(--orange)'};line-height:1">${Math.round(done/total*100)}%</div>
+        <div style="font-size:9px;letter-spacing:2px;color:var(--dim)">${done}/${total} done</div>
+      </div>
+    `;
+    panel.appendChild(hdr);
+
+    // day progress bar
+    const barWrap = document.createElement('div');
+    barWrap.style.cssText = 'margin:10px 16px 0;height:3px;background:rgba(255,255,255,0.05);border-radius:2px;overflow:hidden';
+    barWrap.innerHTML = `<div style="height:100%;width:${Math.round(done/total*100)}%;background:linear-gradient(90deg,var(--gold),var(--orange));border-radius:2px;transition:width 0.5s"></div>`;
+    panel.appendChild(barWrap);
+
+    // completion banner
+    if (done === total) {
+      const banner = document.createElement('div');
+      banner.style.cssText = 'margin:12px 16px 0;padding:14px;background:rgba(255,215,0,0.08);border:1px solid rgba(255,215,0,0.25);text-align:center';
+      banner.innerHTML = '<div style="font-family:\'Bebas Neue\',sans-serif;font-size:22px;color:var(--gold)">🏆 DAY COMPLETE — YOU\'RE THE GOAT</div>';
+      panel.appendChild(banner);
+    }
+
+    // sections
+    SECTIONS.forEach(sec => {
+      const secDone = sectionDone(d.key, sec.id);
+      const secTotal = sec.items.length;
+
+      // label
+      const lbl = document.createElement('div');
+      lbl.className = `section-label ${sec.color}`;
+      lbl.textContent = sec.label;
+      panel.appendChild(lbl);
+
+      // sec progress
+      const sp = document.createElement('div');
+      sp.className = 'sec-progress';
+      sp.innerHTML = `<span>${secDone}/${secTotal}</span><div class="sec-track"><div class="sec-fill" style="width:${Math.round(secDone/secTotal*100)}%"></div></div>`;
+      panel.appendChild(sp);
+
+      // items
+      const group = document.createElement('div');
+      group.className = 'checklist-group';
+
+      sec.items.forEach(item => {
+        const checked = getCheck(d.key, sec.id, item.id);
+        const row = document.createElement('div');
+        row.className = `check-item${checked ? ' done' : ''}`;
+        row.innerHTML = `
+          <div class="cb-box"></div>
+          <div class="ci-content">
+            <div class="ci-title">${item.title}</div>
+            <div class="ci-sub">${item.sub}</div>
+          </div>
+          <span class="ci-tag tag-${item.tag}">${item.tagLabel}</span>
+        `;
+        row.onclick = () => {
+          const now = !getCheck(d.key, sec.id, item.id);
+          setCheck(d.key, sec.id, item.id, now);
+          render();
+        };
+        group.appendChild(row);
+      });
+
+      panel.appendChild(group);
+    });
+
+    container.appendChild(panel);
+  });
+}
+
+function render() {
+  loadState();
+  buildTabs();
+  buildStreak();
+  buildOverall();
+  buildPanels();
+}
+
+loadState();
+render();
+</script>
+</body>
+</html>
